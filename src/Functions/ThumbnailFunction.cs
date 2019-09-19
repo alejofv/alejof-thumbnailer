@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage;
 using SixLabors.ImageSharp;
 
 namespace AlejoF.Media.Functions
@@ -26,13 +25,8 @@ namespace AlejoF.Media.Functions
             }
 
             // append "_thumbnail" to name
-            var extension = Path.GetExtension(blobName);
-            var newBlobName = $"{blobName}.thumbnail{extension}";
-
-            var storageAccount = CloudStorageAccount.Parse(_settings.StorageConnectionString);
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            var container = blobClient.GetContainerReference("note-media");
-            var blockBlob = container.GetBlockBlobReference(newBlobName);
+            var newBlobName = $"{blobName}.thumbnail{Path.GetExtension(blobName)}";
+            var blockBlob = Helpers.BlobContainerHelper.GetBlobReference(_settings.StorageConnectionString, newBlobName);
 
             try
             {

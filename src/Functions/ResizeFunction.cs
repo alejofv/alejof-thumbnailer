@@ -2,9 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
 namespace AlejoF.Media.Functions
@@ -24,11 +22,7 @@ namespace AlejoF.Media.Functions
                 return false;
             }
 
-            var storageAccount = CloudStorageAccount.Parse(_settings.StorageConnectionString);
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            var container = blobClient.GetContainerReference("note-media");
-            var blockBlob = container.GetBlockBlobReference(blobName);
-
+            var blockBlob = Helpers.BlobContainerHelper.GetBlobReference(_settings.StorageConnectionString, blobName);
             try
             {
                 input.Position = 0;
