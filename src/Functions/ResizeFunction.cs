@@ -11,18 +11,18 @@ namespace AlejoF.Media.Functions
     {
         private readonly Settings.FunctionSettings _settings = Settings.Factory.Build();
         
-        public async Task<bool> ResizeImage(string blobName, Stream input, ILogger log)
+        public async Task<bool> ResizeImage(string blobPath, Stream input, ILogger log)
         {
-            var extension = Path.GetExtension(blobName).Replace(".", string.Empty);
+            var extension = Path.GetExtension(blobPath).Replace(".", string.Empty);
             var encoder = Helpers.EncoderHelper.GetEncoder(extension);
 
             if (encoder == null)
             {
-                log.LogInformation($"No encoder support for: {blobName}");
+                log.LogInformation($"No encoder support for: {blobPath}");
                 return false;
             }
 
-            var blockBlob = Helpers.BlobContainerHelper.GetBlobReference(_settings.StorageConnectionString, blobName);
+            var blockBlob = Helpers.BlobContainerHelper.GetBlobReference(_settings.StorageConnectionString, blobPath);
             try
             {
                 input.Position = 0;

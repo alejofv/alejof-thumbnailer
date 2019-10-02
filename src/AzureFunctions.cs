@@ -15,7 +15,7 @@ namespace AlejoF.Media
         [FunctionName(nameof(Thumbnail))]
         public static async Task Thumbnail(
             [QueueTrigger(ThumbnailSignalQueue)]string queueItem,
-            [Blob("note-media/{queueTrigger}", FileAccess.Read)] Stream input,
+            [Blob("{queueTrigger}", FileAccess.Read)] Stream input,
             [Queue(ResizeSignalQueue)]IAsyncCollector<string> queueCollector,
             ILogger log)
         {
@@ -32,7 +32,7 @@ namespace AlejoF.Media
         [FunctionName(nameof(Resize))]
         public static async Task Resize(
             [QueueTrigger(ResizeSignalQueue)]string queueItem,
-            [Blob("note-media/{queueTrigger}", FileAccess.Read)] Stream input,
+            [Blob("{queueTrigger}", FileAccess.Read)] Stream input,
             [Queue(ThumbnailSignalQueue)]IAsyncCollector<string> queueCollector,
             ILogger log)
         {

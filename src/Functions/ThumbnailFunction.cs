@@ -11,7 +11,7 @@ namespace AlejoF.Media.Functions
     {
         private readonly Settings.FunctionSettings _settings = Settings.Factory.Build();
         
-        public async Task<bool> CreateThumbnail(string blobName, Stream input, ILogger log)
+        public async Task<bool> CreateThumbnail(string blobPath, Stream input, ILogger log)
         {
             // Validate max width of the image
             using (Image image = Image.Load(input))
@@ -19,14 +19,14 @@ namespace AlejoF.Media.Functions
                 if (image.Width > _settings.MaxMediaWidth)
                 {
                     // Enqueue for resizing
-                    log.LogInformation($"Image is too big ({blobName}). Requesting resize.");
+                    log.LogInformation($"Image is too big ({blobPath}). Requesting resize.");
                     return false;
                 }
             }
 
             // append "_thumbnail" to name
-            var newBlobName = $"{blobName}.thumbnail{Path.GetExtension(blobName)}";
-            var blockBlob = Helpers.BlobContainerHelper.GetBlobReference(_settings.StorageConnectionString, newBlobName);
+            var newBlobPath = $"{blobPath}.thumbnail{Path.GetExtension(blobPath)}";
+            var blockBlob = Helpers.BlobContainerHelper.GetBlobReference(_settings.StorageConnectionString, newBlobPath);
 
             try
             {
