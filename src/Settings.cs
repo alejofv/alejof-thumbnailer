@@ -5,7 +5,7 @@ namespace AlejoF.Thumbnailer.Settings
 {
     public class FunctionSettings
     {   
-        public int MaxMediaWidth { get; set; }
+        public int MaxMediaSize { get; set; }
         public int ThumbnailSize { get; set; }
         
         public CognitiveServicesSettings CognitiveServices { get; private set; }
@@ -38,7 +38,7 @@ namespace AlejoF.Thumbnailer.Settings
                     Key = GetCognitiveServicesSetting(nameof(CognitiveServicesSettings.Key)),
                 })
             {
-                MaxMediaWidth = GetIntSetting(nameof(FunctionSettings.MaxMediaWidth)) ?? DefaultMaxMediaWidth,
+                MaxMediaSize = GetIntSetting(nameof(FunctionSettings.MaxMediaSize)) ?? DefaultMaxMediaWidth,
                 ThumbnailSize = GetIntSetting(nameof(FunctionSettings.ThumbnailSize)) ?? ThumbnailSize,
             };
         }

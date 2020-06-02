@@ -32,12 +32,15 @@ namespace AlejoF.Thumbnailer.Transforms
             using (var output = new MemoryStream())
             using (Image image = Image.Load(input))
             {
-                var newWidth = _settings.MaxMediaWidth - 10;
+                var width = image.Width;
+                var height = image.Height;
 
-                var divisor = image.Width / newWidth;
-                var height = Convert.ToInt32(Math.Round((decimal)(image.Height / divisor)));
+                if (width > height)
+                    (width, height) = ScaleDown(width, height);
+                else
+                    (height, width) = ScaleDown(height, width);
 
-                image.Mutate(x => x.Resize(newWidth, height));
+                image.Mutate(x => x.Resize(width, height));
                 image.Save(output, encoder);
 
                 output.Position = 0;
@@ -45,6 +48,16 @@ namespace AlejoF.Thumbnailer.Transforms
             }
 
             return (true, null);
+        }
+
+        private (int, int) ScaleDown(int biggerDimension, int otherDimension)
+        {
+            var scaledBiggerDimension = _settings.MaxMediaSize - 10;
+
+            var divisor = (double)biggerDimension / scaledBiggerDimension;
+            var scaledOtherDimension = Convert.ToInt32(Math.Round((decimal)(otherDimension / divisor)));
+
+            return (scaledBiggerDimension, scaledOtherDimension);
         }
     }
 }

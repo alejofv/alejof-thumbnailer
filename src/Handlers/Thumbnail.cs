@@ -22,7 +22,7 @@ namespace AlejoF.Thumbnailer.Transforms
             // Validate max width of the image
             using (Image image = Image.Load(input))
             {
-                if (image.Width > _settings.MaxMediaWidth)
+                if (image.Width > _settings.MaxMediaSize)
                     return (false, $"Image is too big. Requesting resize.");
             }
 
