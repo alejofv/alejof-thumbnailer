@@ -1,7 +1,22 @@
 using System;
 
-namespace AlejoF.Media.Settings
+namespace AlejoF.Thumbnailer.Settings
 {
+    public class FunctionSettings
+    {   
+        public string StorageConnectionString { get; set; }
+        public int MaxMediaWidth { get; set; }
+        public int ThumbnailSize { get; set; }
+        
+        public CognitiveServicesSettings CognitiveServices { get; set; }
+    }
+    
+    public class CognitiveServicesSettings
+    {
+        public string Host { get; set; }
+        public string Key { get; set; }
+    }
+
     public class Factory
     {
         public static FunctionSettings Build()
@@ -10,14 +25,14 @@ namespace AlejoF.Media.Settings
             
             return new FunctionSettings
             {
-                StorageConnectionString = GetSetting("AzureWebJobsStorage"),
-                MaxMediaWidth = GetIntSetting("MaxMediaWidth") ?? 1200,
-                ThumbnailSize = GetIntSetting("ThumbnailWidth") ?? 150,
+                StorageConnectionString = GetSetting(nameof(FunctionSettings.StorageConnectionString)),
+                MaxMediaWidth = GetIntSetting(nameof(FunctionSettings.MaxMediaWidth)) ?? 1200,
+                ThumbnailSize = GetIntSetting(nameof(FunctionSettings.ThumbnailSize)) ?? 150,
                 
                 CognitiveServices = new CognitiveServicesSettings
                 {
-                    Host = getCognitiveSetting("Host"),
-                    Key = getCognitiveSetting("Key"),
+                    Host = getCognitiveSetting(nameof(CognitiveServicesSettings.Host)),
+                    Key = getCognitiveSetting(nameof(CognitiveServicesSettings.Key)),
                 }
             };
         }

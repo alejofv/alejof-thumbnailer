@@ -4,9 +4,9 @@ using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 
-namespace AlejoF.Media.Helpers
+namespace AlejoF.Thumbnailer.Helpers
 {
-    internal static class EncoderHelper
+    internal static class EncoderFactory
     {
         internal static IImageEncoder GetEncoder(string extension)
         {
