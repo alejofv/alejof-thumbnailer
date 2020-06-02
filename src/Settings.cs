@@ -1,47 +1,49 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AlejoF.Thumbnailer.Settings
 {
     public class FunctionSettings
     {   
-        public string StorageConnectionString { get; set; }
         public int MaxMediaWidth { get; set; }
         public int ThumbnailSize { get; set; }
         
-        public CognitiveServicesSettings CognitiveServices { get; set; }
+        public CognitiveServicesSettings CognitiveServices { get; private set; }
+
+        public FunctionSettings(CognitiveServicesSettings cognitiveServicesSettings)
+        {
+            this.CognitiveServices = cognitiveServicesSettings;
+        }
     }
     
     public class CognitiveServicesSettings
     {
-        public string Host { get; set; }
-        public string Key { get; set; }
+        public string? Endpoint { get; set; }
+        public string? Key { get; set; }
     }
 
-    public class Factory
+    internal class Factory
     {
-        public static FunctionSettings Build()
+        private const int DefaultMaxMediaWidth = 1200;
+        private const int ThumbnailSize = 150;
+
+        internal static FunctionSettings Build()
         {
-            var getCognitiveSetting = GetPrefixedSettingFunc<CognitiveServicesSettings>();
+            var GetCognitiveServicesSetting = BuildPrefixedSettingGetter<CognitiveServicesSettings>();
             
-            return new FunctionSettings
-            {
-                StorageConnectionString = GetSetting(nameof(FunctionSettings.StorageConnectionString)),
-                MaxMediaWidth = GetIntSetting(nameof(FunctionSettings.MaxMediaWidth)) ?? 1200,
-                ThumbnailSize = GetIntSetting(nameof(FunctionSettings.ThumbnailSize)) ?? 150,
-                
-                CognitiveServices = new CognitiveServicesSettings
+            return new FunctionSettings(
+                new CognitiveServicesSettings
                 {
-                    Host = getCognitiveSetting(nameof(CognitiveServicesSettings.Host)),
-                    Key = getCognitiveSetting(nameof(CognitiveServicesSettings.Key)),
-                }
+                    Endpoint = GetCognitiveServicesSetting(nameof(CognitiveServicesSettings.Endpoint)),
+                    Key = GetCognitiveServicesSetting(nameof(CognitiveServicesSettings.Key)),
+                })
+            {
+                MaxMediaWidth = GetIntSetting(nameof(FunctionSettings.MaxMediaWidth)) ?? DefaultMaxMediaWidth,
+                ThumbnailSize = GetIntSetting(nameof(FunctionSettings.ThumbnailSize)) ?? ThumbnailSize,
             };
         }
 
-        private static string GetSetting(string name) =>
-            Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
-
-        private static Func<string, string> GetPrefixedSettingFunc<T>() =>
-            name => Environment.GetEnvironmentVariable($"{typeof(T).Name}_{name}", EnvironmentVariableTarget.Process);
+        private static string? GetSetting(string name) => Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
 
         private static int? GetIntSetting(string name)
         {
@@ -50,6 +52,22 @@ namespace AlejoF.Thumbnailer.Settings
                 return intValue;
 
             return null;
+        }
+
+        /// <summary>
+        /// Get a setting getter func for a class name (removing the "Settings" posfix, if any)
+        /// </summary>
+        private static Func<string, string?> BuildPrefixedSettingGetter<T>() =>
+            name => GetSetting($"{typeof(T).Name.Replace("Settings", string.Empty)}_{name}");
+
+    }
+
+    public static class ServiceExtensions
+    {
+        public static IServiceCollection AddFunctionSettings(this IServiceCollection services)
+        {
+            services.AddSingleton(svc => Factory.Build());
+            return services;
         }
     }
 }

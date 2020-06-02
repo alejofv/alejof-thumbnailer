@@ -2,37 +2,31 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using AlejoF.Thumbnailer.Settings;
-using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
 namespace AlejoF.Thumbnailer.Transforms
 {
-    public class Resize : ITransform
+    public class Resize
     {
-        private readonly ILogger _log;
         private readonly FunctionSettings _settings;
 
         public Resize(
-            ILogger log,
             Settings.FunctionSettings settings)
         {
-            this._log = log;
             this._settings = settings;
         }
 
-        public async Task<bool> Execute(Stream input, string blobName, string outputBlobName)
+        public async Task<(bool Success, string? Message)> Execute(Stream input, string blobName, string outputBlobName)
         {
-            var extension = Path.GetExtension(blobName).Replace(".", string.Empty);
-            var encoder = Helpers.EncoderFactory.GetEncoder(extension);
-
+            var encoder = Helpers.EncoderFactory.GetEncoder(Path.GetExtension(blobName));
             if (encoder == null)
-            {
-                _log.LogInformation($"No encoder support for: {blobName}");
-                return false;
-            }
+                return (false, $"Image type for blob '{blobName}' not supported");
 
-            var blockBlob = Helpers.BlobHelper.GetBlobReference(_settings.StorageConnectionString, outputBlobName);
+            var blockBlob = Helpers.BlobHelper.GetBlobReference(outputBlobName);
+            if (blockBlob == null)
+                return (false, $"Blob reference '{outputBlobName}' not valid");
+
             input.Position = 0;
 
             using (var output = new MemoryStream())
@@ -50,7 +44,7 @@ namespace AlejoF.Thumbnailer.Transforms
                 await blockBlob.UploadFromStreamAsync(output);
             }
 
-            return true;
+            return (true, null);
         }
     }
 }

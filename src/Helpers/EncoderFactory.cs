@@ -8,24 +8,14 @@ namespace AlejoF.Thumbnailer.Helpers
 {
     internal static class EncoderFactory
     {
-        internal static IImageEncoder GetEncoder(string extension)
-        {
-            var isSupported = Regex.IsMatch(extension, "gif|png|jpe?g", RegexOptions.IgnoreCase);
-            if (isSupported)
+        internal static IImageEncoder? GetEncoder(string extension) =>
+            (extension.Replace(".", string.Empty)) switch
             {
-                switch (extension)
-                {
-                    case "png":
-                        return new PngEncoder();
-                    case "jpg":
-                    case "jpeg":
-                        return new JpegEncoder();
-                    case "gif":
-                        return new GifEncoder();
-                }
-            }
-
-            return null;
-        }
+                "png"  => new PngEncoder(),
+                "jpg"  => new JpegEncoder(),
+                "jpeg" => new JpegEncoder(),
+                "gif"  => new GifEncoder(),
+                _ => null,
+            };
     }
 }
