@@ -6,9 +6,9 @@ Azure Functions App to generate "smart" thumbnails for uploaded images, using th
 
 # Functions
 
-**Thumbnail**: Function that generates "smart" thumbnails for images using the Vision API. It defaults to a 150x150 thumbnail size, unless otherwise specified in the Application Settings.
+**Thumbnail**: Function that generates "smart" thumbnails for images using the Vision API. It defaults to a 150x150 thumbnail size, and can be overridden in the Application Settings.
 
-**Resize**: Function that scales down images if they are too big. This is because the computer vision api may fail with big images, so this function pre-processes imags that are wider or higher than the maximum media size (defauts to 1200px, also overriden by App Settings).
+**Resize**: Function that scales down images if they are too big. This is because the computer vision api may fail with big images, so this function pre-processes images that are wider or higher than the maximum media size (defaults to 1200px, also overridden by App Settings).
 
 # Processing Flow
 
