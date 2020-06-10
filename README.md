@@ -4,20 +4,20 @@ Azure Functions App to generate "smart" thumbnails for uploaded images, using th
 
 [vision-api]:https://azure.microsoft.com/en-us/services/cognitive-services/computer-vision/
 
-# Main Functions
+## Main Functions
 
 **ProcessThumbnail**: Function that generates "smart" thumbnails for images using the Vision API. It defaults to a 150x150 thumbnail size, and can be overridden in the Application Settings.
 
 **ProcessResize**: Function that scales down images if they are too big. This is because the computer vision api may fail with big images, so this function pre-processes images that are wider or higher than the maximum media size (defaults to 1200px, also overridden by App Settings).
 
 
-# Http Functions
+## Http Functions
 
 There are two http-triggered functions to allow integration with api consumers:
 
 **Upload** (`GET /api/upload`)
 
-Gets a SAS token to upload a file to the pre-defined container (`uploads` by default and overridden by AppSettings).
+Gets a SAS token to upload a file to a pre-defined container (defaults to `uploads` and can be overridden by AppSettings).
 
 Requires a `x-blob-filename`  header containing the name of the file to upload.
 
@@ -26,10 +26,10 @@ Requires a `x-blob-filename`  header containing the name of the file to upload.
 
 Puts a message in the `media-thumbnail-signal` queue to request a thumbnail generation.
 
-Requires a `x-blob-path`  header containing the path of the blob (including the container), which will be used as the message content.
+Requires a `x-blob-path`  header containing the path of the blob (including the container name). This value will be used as the message content.
 
 
-# Processing Flow
+## Processing Flow
 
 ![flow](./docs/flow.png)
 
