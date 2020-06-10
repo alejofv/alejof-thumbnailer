@@ -5,7 +5,7 @@ using AlejoF.Thumbnailer.Settings;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
-namespace AlejoF.Thumbnailer.Transforms
+namespace AlejoF.Thumbnailer.Handlers
 {
     public class Resize
     {

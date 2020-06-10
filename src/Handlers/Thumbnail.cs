@@ -5,7 +5,7 @@ using AlejoF.Thumbnailer.Settings;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using SixLabors.ImageSharp;
 
-namespace AlejoF.Thumbnailer.Transforms
+namespace AlejoF.Thumbnailer.Handlers
 {
     public class Thumbnail
     {

@@ -7,6 +7,7 @@ namespace AlejoF.Thumbnailer.Settings
     {   
         public int MaxMediaSize { get; set; }
         public int ThumbnailSize { get; set; }
+        public string UploadContainer { get; set; } = string.Empty;
         
         public CognitiveServicesSettings CognitiveServices { get; private set; }
 
@@ -25,7 +26,8 @@ namespace AlejoF.Thumbnailer.Settings
     internal class Factory
     {
         private const int DefaultMaxMediaWidth = 1200;
-        private const int ThumbnailSize = 150;
+        private const int DefaultThumbnailSize = 150;
+        private const string DefaultUploadContainer = "uploads";
 
         internal static FunctionSettings Build()
         {
@@ -39,7 +41,8 @@ namespace AlejoF.Thumbnailer.Settings
                 })
             {
                 MaxMediaSize = GetIntSetting(nameof(FunctionSettings.MaxMediaSize)) ?? DefaultMaxMediaWidth,
-                ThumbnailSize = GetIntSetting(nameof(FunctionSettings.ThumbnailSize)) ?? ThumbnailSize,
+                ThumbnailSize = GetIntSetting(nameof(FunctionSettings.ThumbnailSize)) ?? DefaultThumbnailSize,
+                UploadContainer = GetSetting(nameof(FunctionSettings.UploadContainer)) ?? DefaultUploadContainer,
             };
         }
 

@@ -2,7 +2,10 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using AlejoF.Thumbnailer.Settings;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 namespace AlejoF.Thumbnailer
@@ -15,6 +18,9 @@ namespace AlejoF.Thumbnailer
         private const string ResizedNameToken = "__resized__";
         public const string StorageConnectionString = "StorageConnectionString";
 
+        private const string UploadFilenameHeaderName = "x-blob-filename";
+        private const string RequestThumbnailPathHeaderName = "x-blob-path";
+
         private readonly FunctionSettings settings;
 
         public Functions(Settings.FunctionSettings settings)
@@ -22,8 +28,42 @@ namespace AlejoF.Thumbnailer
             this.settings = settings;
         }
 
-        [FunctionName(nameof(Thumbnail))]
-        public async Task Thumbnail(
+        [FunctionName(nameof(Upload))]
+        public IActionResult Upload(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "upload")]HttpRequest req,
+            ILogger log)
+        {
+            log.LogInformation($"C# Http trigger function processed: {nameof(Upload)}");
+
+            var filename = (string)req.Headers[UploadFilenameHeaderName];
+            if (string.IsNullOrEmpty(filename))
+                return new BadRequestResult();
+
+            var result = new Handlers.Upload(this.settings)
+                .Handle(filename);
+
+            return new OkObjectResult(new { url = result.Url, token = result.Token });
+        }
+
+        [FunctionName(nameof(RequestThumbnail))]
+        public async Task<IActionResult> RequestThumbnail(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "thumbnail")]HttpRequest req,
+            [Queue(ThumbnailSignalQueue, Connection = StorageConnectionString)]IAsyncCollector<string> queueCollector,
+            ILogger log)
+        {
+            log.LogInformation($"C# Http trigger function processed: {nameof(RequestThumbnail)}");
+
+            var path = (string)req.Headers[RequestThumbnailPathHeaderName];
+            if (string.IsNullOrEmpty(path))
+                return new BadRequestResult();
+
+            await queueCollector.AddAsync(path);
+
+            return new OkResult();
+        }
+
+        [FunctionName(nameof(ProcessThumbnail))]
+        public async Task ProcessThumbnail(
             [QueueTrigger(ThumbnailSignalQueue, Connection = StorageConnectionString)]string blobName,
             [Blob("{queueTrigger}", FileAccess.Read, Connection = StorageConnectionString)] Stream input,
             [Queue(ResizeSignalQueue, Connection = StorageConnectionString)]IAsyncCollector<string> resizeQueueCollector,
@@ -40,7 +80,7 @@ namespace AlejoF.Thumbnailer
             if (wasResized)
                 outputName = outputName.Replace(ResizedNameToken, string.Empty);
 
-            var result = await new Transforms.Thumbnail(settings)
+            var result = await new Handlers.Thumbnail(settings)
                 .Execute(input, blobName, outputName);
 
             if (!result.Success)
@@ -56,8 +96,8 @@ namespace AlejoF.Thumbnailer
             }
         }
 
-        [FunctionName(nameof(Resize))]
-        public async Task Resize(
+        [FunctionName(nameof(ProcessResize))]
+        public async Task ProcessResize(
             [QueueTrigger(ResizeSignalQueue, Connection = StorageConnectionString)]string blobName,
             [Blob("{queueTrigger}", FileAccess.Read, Connection = StorageConnectionString)] Stream input,
             [Queue(ThumbnailSignalQueue, Connection = StorageConnectionString)]IAsyncCollector<string> queueCollector,
@@ -68,7 +108,7 @@ namespace AlejoF.Thumbnailer
             var extension = System.IO.Path.GetExtension(blobName);
             var outputName = blobName.Remove(blobName.Length - extension.Length) + ResizedNameToken + extension;
 
-            var result = await new Transforms.Resize(settings)
+            var result = await new Handlers.Resize(settings)
                 .Execute(input, blobName, outputName);
 
             if (result.Success)
